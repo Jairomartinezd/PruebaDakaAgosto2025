@@ -6,17 +6,32 @@
     export default {
         data() {
             return {
-            items: []
+            items: [],
+            conversion: null
             };
         },
         mounted() {
-            axios.get('https://fakestoreapi.com/products')
-            .then(response => {
-                this.items = response.data.results;
-            })
-            .catch(error => {
-                console.error("Hubo un error:", error);
-            });
+        this.obtenerItems();
+        this.obtenerConversion();
+        },
+        methods: {
+            async obtenerItems() {
+                try {
+                    const response = await axios.get('https://fakestoreapi.com/products');
+                    this.items = response.data;
+                } catch (error) {
+                    console.error("Error al obtener los items:", error);
+                }
+            },
+            async obtenerConversion() {
+                try {
+                    const response = await fetch('https://pydolarve.org/api/v2/tipo-cambio?currency=usd');
+                    const data = await response.json();
+                    this.conversion = data.price;
+                } catch (error) {
+                    console.error(error);
+                }
+            }
         }
     };
 </script>
@@ -25,19 +40,21 @@
     <h1 class="text-center">Tabla</h1>
     <table class="table table-bordered">
         <thead class="table-primary">
-            <tr>
-                <th scope="col">Imagen Referencial</th>
-                <th scope="col">T&iacute;tulo</th>
-                <th scope="col">Categor&iacute;a</th>
-                <th scope="col">Precio</th>
+            <tr class="text-center">
+                <th scope="col" class="textoNegrita">Imagen Referencial</th>
+                <th scope="col" class="textoNegrita">T&iacute;tulo</th>
+                <th scope="col" class="textoNegrita">Categor&iacute;a</th>
+                <th scope="col" class="textoNegrita">Precio $</th>
+                <th scope="col" class="textoNegrita">Precio Bs.D</th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="item in items" :key="item.id">
-                <td>{{item.image}}</td>
+                <td><img :src="item.image" style="width: 100px; height: 100px;"></td>
                 <td>{{item.title}}</td>
-                <td></td>
-                <td></td>
+                <td>{{item.category}}</td>
+                <td>{{item.price}}</td>
+                <td>{{(item.price * conversion).toFixed(2)}}</td>
             </tr>
         </tbody>
     </table>
